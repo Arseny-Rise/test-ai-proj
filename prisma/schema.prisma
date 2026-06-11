@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  taskLists    TaskList[]
+  notes        Note[]
+}
+
+model TaskList {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  sortOrder Int       @default(0)
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@index([userId])
+}
+
+model Task {
+  id        String    @id @default(cuid())
+  listId    String?
+  title     String
+  completed Boolean   @default(false)
+  dueDate   DateTime?
+  priority  Int       @default(0)
+  sortOrder Int       @default(0)
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  list      TaskList? @relation(fields: [listId], references: [id], onDelete: SetNull)
+  subtasks  Subtask[]
+
+  @@index([listId])
+  @@index([dueDate])
+}
+
+model Subtask {
+  id        String    @id @default(cuid())
+  taskId    String
+  title     String
+  completed Boolean   @default(false)
+  sortOrder Int       @default(0)
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model Note {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String    @default("Без названия")
+  contentJson Json      @default("{}")
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model SyncLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  clientId   String
+  updatedAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}

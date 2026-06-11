@@ -1,0 +1,13 @@
+.env
+.env.local
+.env.*.local
+.git
+.gitignore
+.next
+node_modules
+Dockerfile
+docker-compose*.yml
+README.md
+AGENTS.md
+CLAUDE.md
+scripts
